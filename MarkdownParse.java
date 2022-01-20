@@ -15,15 +15,19 @@ public class MarkdownParse {
             if(nextOpenBracket==-1){
                 break;
             }
+            boolean isImage=false;
             if(markdown.indexOf("!",nextOpenBracket-1)==nextOpenBracket-1){
-                break;
+                isImage=true;
             }
             int nextCloseBracket = markdown.indexOf("]", nextOpenBracket);
             int openParen = markdown.indexOf("(", nextCloseBracket);
             int closeParen = markdown.indexOf(")", openParen);
             System.out.println(nextOpenBracket);
             System.out.println(closeParen);
-            toReturn.add(markdown.substring(openParen + 1, closeParen));
+            if(!isImage){
+                toReturn.add(markdown.substring(openParen + 1, closeParen));
+            }
+                
             System.out.println(toReturn.get(toReturn.size()-1));
             if (closeParen>currentIndex){
                 currentIndex = closeParen + 1;
