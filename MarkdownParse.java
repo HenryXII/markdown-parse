@@ -12,6 +12,7 @@ public class MarkdownParse {
         int currentIndex = 0;
         while(currentIndex < markdown.length()) {
             int nextOpenBracket = markdown.indexOf("[", currentIndex);
+<<<<<<< HEAD
             if(nextOpenBracket==-1){
                 break;
             }
@@ -35,6 +36,13 @@ public class MarkdownParse {
                 break;
             }
             
+=======
+            int nextCloseBracket = markdown.indexOf("]", nextOpenBracket);
+            int openParen = markdown.indexOf("(", nextCloseBracket);
+            int closeParen = markdown.indexOf(")", openParen);
+            toReturn.add(markdown.substring(openParen + 1, closeParen));
+            currentIndex = closeParen + 1;
+>>>>>>> parent of b944b4d (Fix infinite loop error)
         }
         return toReturn;
     }
