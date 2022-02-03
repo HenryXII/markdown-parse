@@ -1,2 +1,1 @@
-[link](https://github.com)
 ![image](image.jpg)
