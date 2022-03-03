@@ -9,26 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 public class MarkdownParse {
-
-    static int findCloseParen(String markdown, int openParen) {
-        int closeParen = openParen + 1;
-        int openParenCount = 1;
-        while (openParenCount > 0 && closeParen < markdown.length()) {
-            if (markdown.charAt(closeParen) == '(') {
-                openParenCount++;
-            } else if (markdown.charAt(closeParen) == ')') {
-                openParenCount--;
-            }
-            closeParen++;
-        }
-        if(openParenCount == 0) {
-          return closeParen - 1;
-        }
-        else {
-          return -1;
-        }
-
-    }
     public static Map<String, List<String>> getLinks(File dirOrFile) throws IOException {
         Map<String, List<String>> result = new HashMap<>();
         if(dirOrFile.isDirectory()) {
@@ -53,31 +33,41 @@ public class MarkdownParse {
         // find the next [, then find the ], then find the (, then take up to
         // the next )
         int currentIndex = 0;
+        int lastClosedParen = markdown.lastIndexOf(")");
         while(currentIndex < markdown.length()) {
             int nextOpenBracket = markdown.indexOf("[", currentIndex);
-            int nextCodeBlock = markdown.indexOf("\n```");
-            if(nextCodeBlock < nextOpenBracket && nextCodeBlock != -1) {
-                int endOfCodeBlock = markdown.indexOf("\n```");
-                currentIndex = endOfCodeBlock + 1;
+
+            boolean isImage = false;
+
+            if (markdown.indexOf("!", nextOpenBracket-1) == nextOpenBracket - 1) isImage = true;
+            
+
+            if (nextOpenBracket == 0) isImage = false;
+
+            int nextCloseBracket = markdown.indexOf("]", nextOpenBracket);
+            int openParen = markdown.indexOf("(", currentIndex);
+            int closeParen = markdown.indexOf(")", openParen);
+
+            if(nextOpenBracket == -1 || nextCloseBracket == -1 || openParen == -1 || closeParen == -1) {
+		        break;
+	        }
+
+            if (openParen - nextCloseBracket > 2) {
+                currentIndex = markdown.indexOf("[", currentIndex + 1);
+
+                if (currentIndex == lastClosedParen) {
+                    break;
+                } else if (currentIndex < 0) {
+                    break;
+                }
                 continue;
             }
-            int nextCloseBracket = markdown.indexOf("]", nextOpenBracket);
-            int openParen = markdown.indexOf("(", nextCloseBracket);
 
-            // The close paren we need may not be the next one in the file
-            int closeParen = findCloseParen(markdown, openParen);
-            
-            if(nextOpenBracket == -1 || nextCloseBracket == -1
-                  || closeParen == -1 || openParen == -1) {
-                return toReturn;
-            }
-            String potentialLink = markdown.substring(openParen + 1, closeParen).trim();
-            if(potentialLink.indexOf(" ") == -1 && potentialLink.indexOf("\n") == -1) {
-                toReturn.add(potentialLink);
+            if (!isImage) toReturn.add(markdown.substring(openParen + 1, closeParen));
+            if (closeParen > currentIndex){
                 currentIndex = closeParen + 1;
-            }
-            else {
-                currentIndex = currentIndex + 1;
+            }else {
+                break;
             }
         }
         return toReturn;
